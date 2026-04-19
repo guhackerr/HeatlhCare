@@ -1,0 +1,112 @@
+:root {
+  --bg: #11131a;
+  --panel: #171b24;
+  --panel-2: #1f2430;
+  --panel-3: #262c3a;
+  --border: #2d3445;
+  --text: #e8edf7;
+  --muted: #94a3b8;
+  --accent: #a78bfa;
+  --accent-2: #60a5fa;
+  --success: #34d399;
+  --warning: #fbbf24;
+  --danger: #fb7185;
+}
+
+html,
+body {
+  height: 100%;
+  background: radial-gradient(circle at top, #1a1f2d 0%, var(--bg) 50%);
+  color: var(--text);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #3b4254;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.panel {
+  background: rgba(23, 27, 36, 0.88);
+  backdrop-filter: blur(14px);
+}
+
+.panel-2 {
+  background: rgba(31, 36, 48, 0.92);
+}
+
+.panel-3 {
+  background: rgba(38, 44, 58, 0.92);
+}
+
+.border-custom {
+  border-color: var(--border);
+}
+
+.text-muted {
+  color: var(--muted);
+}
+
+.soft-shadow {
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+}
+
+.active-menu {
+  border-left: 3px solid var(--accent);
+  background: rgba(167, 139, 250, 0.1);
+  color: #f8fafc;
+}
+
+.active-tab {
+  border-bottom: 2px solid var(--accent);
+  color: #f8fafc;
+  font-weight: 600;
+}
+
+.screen-content {
+  display: none;
+}
+
+.screen-content.active {
+  display: flex;
+  flex-direction: column;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.chip {
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.card-hover {
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-1px);
+  border-color: rgba(167, 139, 250, 0.55);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.grid-line {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 24px 24px;
+}

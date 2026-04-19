@@ -5,70 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Prontuário Inteligente</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    :root {
-      --bg: #11131a;
-      --panel: #171b24;
-      --panel-2: #1f2430;
-      --panel-3: #262c3a;
-      --border: #2d3445;
-      --text: #e8edf7;
-      --muted: #94a3b8;
-      --accent: #a78bfa;
-      --accent-2: #60a5fa;
-      --success: #34d399;
-      --warning: #fbbf24;
-      --danger: #fb7185;
-    }
-
-    html, body {
-      height: 100%;
-      background: radial-gradient(circle at top, #1a1f2d 0%, var(--bg) 50%);
-      color: var(--text);
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    }
-
-    ::-webkit-scrollbar { width: 10px; height: 10px; }
-    ::-webkit-scrollbar-thumb { background: #3b4254; border-radius: 999px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-
-    .panel { background: rgba(23, 27, 36, 0.88); backdrop-filter: blur(14px); }
-    .panel-2 { background: rgba(31, 36, 48, 0.92); }
-    .panel-3 { background: rgba(38, 44, 58, 0.92); }
-    .border-custom { border-color: var(--border); }
-    .text-muted { color: var(--muted); }
-    .soft-shadow { box-shadow: 0 16px 40px rgba(0,0,0,0.25); }
-    .active-menu {
-      border-left: 3px solid var(--accent);
-      background: rgba(167, 139, 250, 0.10);
-      color: #f8fafc;
-    }
-    .active-tab {
-      border-bottom: 2px solid var(--accent);
-      color: #f8fafc;
-      font-weight: 600;
-    }
-    .screen-content { display: none; }
-    .screen-content.active { display: flex; flex-direction: column; }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-    .chip {
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,0.03);
-    }
-    .card-hover {
-      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
-    }
-    .card-hover:hover {
-      transform: translateY(-1px);
-      border-color: rgba(167,139,250,0.55);
-      background: rgba(255,255,255,0.04);
-    }
-    .grid-line {
-      background-image: linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
-      background-size: 24px 24px;
-    }
-  </style>
+  <link rel="stylesheet" href="assets/css/styles.css" />
 </head>
 <body class="h-screen overflow-hidden">
   <div class="h-full flex overflow-hidden">
@@ -95,11 +32,11 @@
 
       <nav class="flex-1 py-4 overflow-y-auto">
         <ul class="space-y-1 px-3">
-          <li><button onclick="changeScreen('inicio')" class="w-full text-left px-4 py-3 rounded-lg text-muted hover:bg-white/5 transition menu-btn flex items-center gap-3" data-target="inicio"><span>⌂</span><span>Início</span></button></li>
-          <li><button onclick="changeScreen('pacientes')" class="w-full text-left px-4 py-3 rounded-lg active-menu transition menu-btn flex items-center gap-3" data-target="pacientes"><span>◉</span><span>Pacientes</span></button></li>
-          <li><button onclick="changeScreen('agenda')" class="w-full text-left px-4 py-3 rounded-lg text-muted hover:bg-white/5 transition menu-btn flex items-center justify-between gap-3" data-target="agenda"><span class="flex items-center gap-3"><span>◷</span><span>Agenda</span></span><span class="text-xs text-muted">12</span></button></li>
-          <li><button onclick="changeScreen('relatorios')" class="w-full text-left px-4 py-3 rounded-lg text-muted hover:bg-white/5 transition menu-btn flex items-center gap-3" data-target="relatorios"><span>▦</span><span>Relatórios</span></button></li>
-          <li><button onclick="changeScreen('configuracoes')" class="w-full text-left px-4 py-3 rounded-lg text-muted hover:bg-white/5 transition menu-btn flex items-center gap-3" data-target="configuracoes"><span>⚙</span><span>Configurações</span></button></li>
+          <li><button type="button" class="w-full text-left px-4 py-3 rounded-lg text-muted hover:bg-white/5 transition menu-btn flex items-center gap-3" data-screen="inicio" data-target="inicio"><span>⌂</span><span>Início</span></button></li>
+          <li><button type="button" class="w-full text-left px-4 py-3 rounded-lg active-menu transition menu-btn flex items-center gap-3" data-screen="pacientes" data-target="pacientes"><span>◉</span><span>Pacientes</span></button></li>
+          <li><button type="button" class="w-full text-left px-4 py-3 rounded-lg text-muted hover:bg-white/5 transition menu-btn flex items-center justify-between gap-3" data-screen="agenda" data-target="agenda"><span class="flex items-center gap-3"><span>◷</span><span>Agenda</span></span><span class="text-xs text-muted">12</span></button></li>
+          <li><button type="button" class="w-full text-left px-4 py-3 rounded-lg text-muted hover:bg-white/5 transition menu-btn flex items-center gap-3" data-screen="relatorios" data-target="relatorios"><span>▦</span><span>Relatórios</span></button></li>
+          <li><button type="button" class="w-full text-left px-4 py-3 rounded-lg text-muted hover:bg-white/5 transition menu-btn flex items-center gap-3" data-screen="configuracoes" data-target="configuracoes"><span>⚙</span><span>Configurações</span></button></li>
         </ul>
       </nav>
 
@@ -117,7 +54,7 @@
     <!-- Main -->
     <main class="flex-1 min-w-0 flex flex-col relative">
       <!-- Screen: Início -->
-      <div id="screen-inicio" class="screen-content active h-full overflow-hidden">
+      <div id="screen-inicio" class="screen-content h-full overflow-hidden">
         <header class="panel border-b border-custom px-8 py-6 soft-shadow">
           <div class="flex items-center justify-between gap-4 flex-wrap">
             <div>
@@ -223,10 +160,10 @@
           </div>
 
           <div class="flex gap-8 text-sm overflow-x-auto">
-            <button onclick="changeTab('visao-geral')" class="pb-3 text-muted hover:text-white transition tab-btn whitespace-nowrap" data-target="visao-geral">Visão Geral</button>
-            <button onclick="changeTab('anotacoes')" class="pb-3 text-muted hover:text-white transition tab-btn whitespace-nowrap" data-target="anotacoes">Anotações</button>
-            <button onclick="changeTab('evolucao')" class="pb-3 text-muted hover:text-white transition tab-btn whitespace-nowrap" data-target="evolucao">Evolução</button>
-            <button onclick="changeTab('auditoria')" class="pb-3 active-tab transition tab-btn whitespace-nowrap" data-target="auditoria">Auditoria</button>
+            <button type="button" class="pb-3 text-muted hover:text-white transition tab-btn whitespace-nowrap" data-tab="visao-geral" data-target="visao-geral">Visão Geral</button>
+            <button type="button" class="pb-3 text-muted hover:text-white transition tab-btn whitespace-nowrap" data-tab="anotacoes" data-target="anotacoes">Anotações</button>
+            <button type="button" class="pb-3 text-muted hover:text-white transition tab-btn whitespace-nowrap" data-tab="evolucao" data-target="evolucao">Evolução</button>
+            <button type="button" class="pb-3 active-tab transition tab-btn whitespace-nowrap" data-tab="auditoria" data-target="auditoria">Auditoria</button>
           </div>
         </header>
 
@@ -252,7 +189,7 @@
 
                 <div class="space-y-4">
                   <div class="text-xs text-muted">Hoje, 14:32</div>
-                  <div class="bg-[#1f2430] border border-violet-500/50 rounded-2xl p-4 flex items-center gap-4 cursor-pointer relative overflow-hidden card-hover" onclick="selectActivity('ana')">
+                  <div class="bg-[#1f2430] border border-violet-500/50 rounded-2xl p-4 flex items-center gap-4 cursor-pointer relative overflow-hidden card-hover" data-activity="ana">
                     <div class="absolute left-0 top-0 bottom-0 w-1 bg-violet-500"></div>
                     <div class="w-10 h-10 rounded-full overflow-hidden bg-gray-600 ml-2 shrink-0"><img src="https://i.pravatar.cc/150?img=47" alt="Ana Martins" class="w-full h-full object-cover" /></div>
                     <div class="flex-1 min-w-0">
@@ -263,7 +200,7 @@
                   </div>
 
                   <div class="text-xs text-muted">Hoje, 10:15</div>
-                  <div class="bg-[#1f2430] border border-custom rounded-2xl p-4 flex items-center gap-4 cursor-pointer hover:bg-white/4 transition relative overflow-hidden card-hover" onclick="selectActivity('carlos')">
+                  <div class="bg-[#1f2430] border border-custom rounded-2xl p-4 flex items-center gap-4 cursor-pointer hover:bg-white/4 transition relative overflow-hidden card-hover" data-activity="carlos">
                     <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-400"></div>
                     <div class="w-10 h-10 rounded-full overflow-hidden bg-gray-600 ml-2 shrink-0"><img src="https://i.pravatar.cc/150?img=11" alt="Carlos Souza" class="w-full h-full object-cover" /></div>
                     <div class="flex-1 min-w-0">
@@ -274,7 +211,7 @@
                   </div>
 
                   <div class="text-xs text-muted">Ontem, 16:45</div>
-                  <div class="bg-[#1f2430] border border-custom rounded-2xl p-4 flex items-center gap-4 cursor-pointer hover:bg-white/4 transition relative overflow-hidden card-hover" onclick="selectActivity('rita')">
+                  <div class="bg-[#1f2430] border border-custom rounded-2xl p-4 flex items-center gap-4 cursor-pointer hover:bg-white/4 transition relative overflow-hidden card-hover" data-activity="rita">
                     <div class="absolute left-0 top-0 bottom-0 w-1 bg-pink-400"></div>
                     <div class="w-10 h-10 rounded-full overflow-hidden bg-gray-600 ml-2 shrink-0"><img src="https://i.pravatar.cc/150?img=5" alt="Rita Lopes" class="w-full h-full object-cover" /></div>
                     <div class="flex-1 min-w-0">
@@ -576,81 +513,6 @@
     </main>
   </div>
 
-  <script>
-    const activityMap = {
-      ana: {
-        user: 'Ana Martins',
-        action: 'Editou anotação',
-        time: 'Hoje, 14:32',
-        ip: '192.168.1.12',
-        before: 'Paciente: relatou preocupações com trabalho.',
-        after: 'Paciente: relatou preocupações com trabalho e insônia.'
-      },
-      carlos: {
-        user: 'Carlos Souza',
-        action: 'Acessou prontuário',
-        time: 'Hoje, 10:15',
-        ip: '192.168.1.20',
-        before: 'Consulta em aberto para revisão de histórico.',
-        after: 'Consulta revisada. Histórico visualizado sem alterações no conteúdo.'
-      },
-      rita: {
-        user: 'Rita Lopes',
-        action: 'Exportou dados',
-        time: 'Ontem, 16:45',
-        ip: '192.168.1.34',
-        before: 'Relatório parcial gerado para conferência.',
-        after: 'Relatório PDF completo exportado com anexos e auditoria.'
-      }
-    };
-
-    function changeScreen(screenId) {
-      document.querySelectorAll('.screen-content').forEach(el => el.classList.remove('active'));
-      document.getElementById('screen-' + screenId).classList.add('active');
-
-      document.querySelectorAll('.menu-btn').forEach(btn => {
-        btn.classList.remove('active-menu');
-        btn.classList.add('text-muted');
-        if (btn.dataset.target === screenId) {
-          btn.classList.add('active-menu');
-          btn.classList.remove('text-muted');
-        }
-      });
-
-      const status = document.getElementById('sync-status');
-      if (status) status.textContent = 'agora';
-    }
-
-    function changeTab(tabId) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-      document.getElementById('tab-' + tabId).classList.add('active');
-
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('active-tab');
-        btn.classList.add('text-muted');
-        if (btn.dataset.target === tabId) {
-          btn.classList.add('active-tab');
-          btn.classList.remove('text-muted');
-        }
-      });
-    }
-
-    function selectActivity(key) {
-      const a = activityMap[key];
-      if (!a) return;
-      document.getElementById('act-user').textContent = a.user;
-      document.getElementById('act-action').textContent = a.action;
-      document.getElementById('act-time').textContent = a.time;
-      document.getElementById('act-ip').textContent = a.ip;
-      document.getElementById('act-before').textContent = a.before;
-      document.getElementById('act-after').textContent = a.after;
-    }
-
-    // Pequena UX: ativa a primeira tela e primeira aba corretamente ao carregar.
-    window.addEventListener('DOMContentLoaded', () => {
-      changeScreen('pacientes');
-      changeTab('auditoria');
-    });
-  </script>
+  <script src="assets/js/app.js"></script>
 </body>
 </html>
