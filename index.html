@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prontuário Inteligente</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --bg: #11131a;
+      --panel: #171b24;
+      --panel-2: #1f2430;
+      --panel-3: #262c3a;
+      --border: #2d3445;
+      --text: #e8edf7;
+      --muted: #94a3b8;
+      --accent: #a78bfa;
+      --accent-2: #60a5fa;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --danger: #fb7185;
+    }
+
+    html, body {
+      height: 100%;
+      background: radial-gradient(circle at top, #1a1f2d 0%, var(--bg) 50%);
+      color: var(--text);
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-thumb { background: #3b4254; border-radius: 999px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+
+    .panel { background: rgba(23, 27, 36, 0.88); backdrop-filter: blur(14px); }
+    .panel-2 { background: rgba(31, 36, 48, 0.92); }
+    .panel-3 { background: rgba(38, 44, 58, 0.92); }
+    .border-custom { border-color: var(--border); }
+    .text-muted { color: var(--muted); }
+    .soft-shadow { box-shadow: 0 16px 40px rgba(0,0,0,0.25); }
+    .active-menu {
+      border-left: 3px solid var(--accent);
+      background: rgba(167, 139, 250, 0.10);
+      color: #f8fafc;
+    }
+    .active-tab {
+      border-bottom: 2px solid var(--accent);
+      color: #f8fafc;
+      font-weight: 600;
+    }
+    .screen-content { display: none; }
+    .screen-content.active { display: flex; flex-direction: column; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .chip {
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+    }
+    .card-hover {
+      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-1px);
+      border-color: rgba(167,139,250,0.55);
+      background: rgba(255,255,255,0.04);
+    }
+    .grid-line {
+      background-image: linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+  </style>
+</head>
+<body class="h-screen overflow-hidden">
+  <div class="h-full flex overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="w-72 panel flex flex-col border-r border-custom z-10 soft-shadow">
+      <div class="h-16 flex items-center px-6 border-b border-custom">
+        <div class="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-violet-500 mr-3 border border-indigo-300/40"></div>
+        <div>
+          <span class="font-semibold text-lg tracking-wide block leading-none">Prontuário Inteligente</span>
+          <span class="text-[11px] text-muted">Painel clínico com auditoria</span>
+        </div>
+      </div>
+
+      <div class="p-5 border-b border-custom flex items-center gap-4 panel-2">
+        <div class="w-12 h-12 rounded-full overflow-hidden ring-2 ring-violet-400/40">
+          <img src="https://i.pravatar.cc/150?img=47" alt="Ana Martins" class="w-full h-full object-cover" />
+        </div>
+        <div class="min-w-0">
+          <h3 class="font-semibold text-sm truncate">Ana Martins</h3>
+          <p class="text-xs text-muted">Psicóloga Clínica</p>
+          <p class="text-[11px] text-emerald-300 mt-1">Online e sincronizada</p>
+        </div>
+      </div>
+
+      <nav class="flex-1 py-4 overflow-y-auto">
+        <ul class="space-y-1 px-3">
+          <li><button onclick="changeScreen('inicio')" class="w-full text-left px-4 py-3 rounded-lg text-muted hover:bg-white/5 transition menu-btn flex items-center gap-3" data-target="inicio"><span>⌂</span><span>Início</span></button></li>
+          <li><button onclick="changeScreen('pacientes')" class="w-full text-left px-4 py-3 rounded-lg active-menu transition menu-btn flex items-center gap-3" data-target="pacientes"><span>◉</span><span>Pacientes</span></button></li>
+          <li><button onclick="changeScreen('agenda')" class="w-full text-left px-4 py-3 rounded-lg text-muted hover:bg-white/5 transition menu-btn flex items-center justify-between gap-3" data-target="agenda"><span class="flex items-center gap-3"><span>◷</span><span>Agenda</span></span><span class="text-xs text-muted">12</span></button></li>
+          <li><button onclick="changeScreen('relatorios')" class="w-full text-left px-4 py-3 rounded-lg text-muted hover:bg-white/5 transition menu-btn flex items-center gap-3" data-target="relatorios"><span>▦</span><span>Relatórios</span></button></li>
+          <li><button onclick="changeScreen('configuracoes')" class="w-full text-left px-4 py-3 rounded-lg text-muted hover:bg-white/5 transition menu-btn flex items-center gap-3" data-target="configuracoes"><span>⚙</span><span>Configurações</span></button></li>
+        </ul>
+      </nav>
+
+      <div class="p-4 border-t border-custom">
+        <div class="flex items-center justify-between text-xs text-muted mb-2">
+          <span>Sincronização</span>
+          <span id="sync-status">Há 5 minutos</span>
+        </div>
+        <div class="h-2 w-full bg-black/25 rounded-full overflow-hidden border border-white/5">
+          <div class="h-full w-[72%] bg-gradient-to-r from-blue-500 via-violet-500 to-pink-500"></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="flex-1 min-w-0 flex flex-col relative">
+      <!-- Screen: Início -->
+      <div id="screen-inicio" class="screen-content active h-full overflow-hidden">
+        <header class="panel border-b border-custom px-8 py-6 soft-shadow">
+          <div class="flex items-center justify-between gap-4 flex-wrap">
+            <div>
+              <p class="text-xs uppercase tracking-[0.28em] text-violet-300/80">Dashboard global</p>
+              <h1 class="text-2xl font-semibold mt-1">Resumo operacional da clínica</h1>
+              <p class="text-muted text-sm mt-2">Visão rápida de agenda, atendimento, produtividade e alertas.</p>
+            </div>
+            <div class="flex gap-3 flex-wrap">
+              <button class="chip px-4 py-2 rounded-xl text-sm hover:bg-white/5 transition">Novo paciente</button>
+              <button class="chip px-4 py-2 rounded-xl text-sm hover:bg-white/5 transition">Nova sessão</button>
+              <button class="px-4 py-2 rounded-xl text-sm bg-blue-600 hover:bg-blue-700 transition text-white">Gerar resumo</button>
+            </div>
+          </div>
+        </header>
+
+        <section class="flex-1 overflow-y-auto p-8 grid gap-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+            <div class="panel-2 border border-custom rounded-2xl p-5 soft-shadow card-hover">
+              <p class="text-xs text-muted">Sessões hoje</p>
+              <h2 class="text-3xl font-semibold mt-2">14</h2>
+              <p class="text-xs text-emerald-300 mt-2">+3 em relação a ontem</p>
+            </div>
+            <div class="panel-2 border border-custom rounded-2xl p-5 soft-shadow card-hover">
+              <p class="text-xs text-muted">Pacientes ativos</p>
+              <h2 class="text-3xl font-semibold mt-2">46</h2>
+              <p class="text-xs text-muted mt-2">12 com acompanhamento semanal</p>
+            </div>
+            <div class="panel-2 border border-custom rounded-2xl p-5 soft-shadow card-hover">
+              <p class="text-xs text-muted">Pendências</p>
+              <h2 class="text-3xl font-semibold mt-2">08</h2>
+              <p class="text-xs text-amber-300 mt-2">2 prontuários sem revisão</p>
+            </div>
+            <div class="panel-2 border border-custom rounded-2xl p-5 soft-shadow card-hover">
+              <p class="text-xs text-muted">Arquivos anexados</p>
+              <h2 class="text-3xl font-semibold mt-2">12</h2>
+              <p class="text-xs text-muted mt-2">PDF, áudio, exames e termos</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div class="xl:col-span-2 panel border border-custom rounded-2xl p-6 soft-shadow">
+              <div class="flex items-center justify-between mb-5">
+                <h3 class="font-semibold text-lg">Agenda do dia</h3>
+                <span class="text-xs text-muted">Atualizado agora</span>
+              </div>
+              <div class="space-y-3">
+                <div class="bg-white/3 border border-custom rounded-xl p-4 flex items-center justify-between gap-4 card-hover">
+                  <div>
+                    <p class="font-medium">09:00 - João Silveira</p>
+                    <p class="text-xs text-muted">Sessão individual • Presencial</p>
+                  </div>
+                  <span class="chip text-xs px-3 py-1 rounded-full">Confirmado</span>
+                </div>
+                <div class="bg-white/3 border border-custom rounded-xl p-4 flex items-center justify-between gap-4 card-hover">
+                  <div>
+                    <p class="font-medium">11:30 - Maria Costa</p>
+                    <p class="text-xs text-muted">Retorno terapêutico • Online</p>
+                  </div>
+                  <span class="chip text-xs px-3 py-1 rounded-full">Aguardando</span>
+                </div>
+                <div class="bg-white/3 border border-custom rounded-xl p-4 flex items-center justify-between gap-4 card-hover">
+                  <div>
+                    <p class="font-medium">14:00 - Carlos Souza</p>
+                    <p class="text-xs text-muted">Avaliação evolutiva • Presencial</p>
+                  </div>
+                  <span class="chip text-xs px-3 py-1 rounded-full">Em andamento</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel border border-custom rounded-2xl p-6 soft-shadow">
+              <h3 class="font-semibold text-lg mb-4">Alertas</h3>
+              <div class="space-y-3 text-sm">
+                <div class="panel-3 border border-amber-400/20 rounded-xl p-4">
+                  <p class="font-medium text-amber-200">1 documento pendente</p>
+                  <p class="text-xs text-muted mt-1">Termo de consentimento ainda não assinado.</p>
+                </div>
+                <div class="panel-3 border border-blue-400/20 rounded-xl p-4">
+                  <p class="font-medium text-blue-200">Sincronização parcial</p>
+                  <p class="text-xs text-muted mt-1">Backup local finalizado. Nuvem aguardando fila.</p>
+                </div>
+                <div class="panel-3 border border-emerald-400/20 rounded-xl p-4">
+                  <p class="font-medium text-emerald-200">Auditoria ativa</p>
+                  <p class="text-xs text-muted mt-1">Todas as alterações estão sendo registradas.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Screen: Pacientes -->
+      <div id="screen-pacientes" class="screen-content active h-full flex-col">
+        <header class="panel border-b border-custom px-8 pt-8 pb-0 soft-shadow">
+          <div class="flex items-center gap-5 mb-6 flex-wrap">
+            <div class="w-16 h-16 rounded-full overflow-hidden ring-2 ring-violet-400/40">
+              <img src="https://i.pravatar.cc/150?img=11" alt="João Silveira" class="w-full h-full object-cover" />
+            </div>
+            <div>
+              <h1 class="text-2xl font-semibold flex items-end gap-2">João Silveira <span class="text-lg text-muted font-normal">32 anos</span></h1>
+              <p class="text-sm text-muted mt-1">ID: PS-93214 <span class="mx-2">|</span> Em terapia desde 2024</p>
+            </div>
+          </div>
+
+          <div class="flex gap-8 text-sm overflow-x-auto">
+            <button onclick="changeTab('visao-geral')" class="pb-3 text-muted hover:text-white transition tab-btn whitespace-nowrap" data-target="visao-geral">Visão Geral</button>
+            <button onclick="changeTab('anotacoes')" class="pb-3 text-muted hover:text-white transition tab-btn whitespace-nowrap" data-target="anotacoes">Anotações</button>
+            <button onclick="changeTab('evolucao')" class="pb-3 text-muted hover:text-white transition tab-btn whitespace-nowrap" data-target="evolucao">Evolução</button>
+            <button onclick="changeTab('auditoria')" class="pb-3 active-tab transition tab-btn whitespace-nowrap" data-target="auditoria">Auditoria</button>
+          </div>
+        </header>
+
+        <div class="flex-1 overflow-hidden relative">
+          <div id="tab-auditoria" class="tab-content active h-full p-8 overflow-y-auto">
+            <div class="flex items-center justify-between gap-4 mb-6 flex-wrap">
+              <h2 class="text-lg font-semibold">Registro de atividades</h2>
+              <div class="flex gap-2">
+                <button class="chip px-4 py-2 rounded-xl text-sm hover:bg-white/5 transition">Exportar CSV</button>
+                <button class="chip px-4 py-2 rounded-xl text-sm hover:bg-white/5 transition">Exportar PDF</button>
+              </div>
+            </div>
+
+            <div class="flex gap-6 xl:flex-row flex-col h-[calc(100%-3rem)]">
+              <div class="flex-1 flex flex-col gap-4 min-w-0">
+                <div class="flex gap-3 mb-2 flex-wrap items-center">
+                  <span class="text-sm text-muted mr-2">Filtrar por:</span>
+                  <select class="bg-[#1f2430] border border-custom rounded-xl px-3 py-2 text-sm outline-none"><option>Usuário</option><option>Ana Martins</option><option>Carlos Souza</option><option>Rita Lopes</option></select>
+                  <select class="bg-[#1f2430] border border-custom rounded-xl px-3 py-2 text-sm outline-none"><option>Tipo de ação</option><option>Leitura</option><option>Edição</option><option>Exportação</option></select>
+                  <select class="bg-[#1f2430] border border-custom rounded-xl px-3 py-2 text-sm outline-none"><option>Data</option><option>Hoje</option><option>Ontem</option></select>
+                  <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm transition">Buscar</button>
+                </div>
+
+                <div class="space-y-4">
+                  <div class="text-xs text-muted">Hoje, 14:32</div>
+                  <div class="bg-[#1f2430] border border-violet-500/50 rounded-2xl p-4 flex items-center gap-4 cursor-pointer relative overflow-hidden card-hover" onclick="selectActivity('ana')">
+                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-violet-500"></div>
+                    <div class="w-10 h-10 rounded-full overflow-hidden bg-gray-600 ml-2 shrink-0"><img src="https://i.pravatar.cc/150?img=47" alt="Ana Martins" class="w-full h-full object-cover" /></div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm"><span class="font-semibold text-white">Ana Martins</span> <span class="text-muted text-xs mx-1">|</span> Editou anotação</p>
+                      <p class="text-xs text-muted mt-1 truncate">Alteração na sessão do dia 24/04.</p>
+                    </div>
+                    <div class="text-muted">›</div>
+                  </div>
+
+                  <div class="text-xs text-muted">Hoje, 10:15</div>
+                  <div class="bg-[#1f2430] border border-custom rounded-2xl p-4 flex items-center gap-4 cursor-pointer hover:bg-white/4 transition relative overflow-hidden card-hover" onclick="selectActivity('carlos')">
+                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-400"></div>
+                    <div class="w-10 h-10 rounded-full overflow-hidden bg-gray-600 ml-2 shrink-0"><img src="https://i.pravatar.cc/150?img=11" alt="Carlos Souza" class="w-full h-full object-cover" /></div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm"><span class="font-semibold text-white">Carlos Souza</span> <span class="text-muted text-xs mx-1">|</span> Acessou prontuário</p>
+                      <p class="text-xs text-muted mt-1 truncate">Visualizou dados do paciente João Silveira.</p>
+                    </div>
+                    <div class="text-muted">›</div>
+                  </div>
+
+                  <div class="text-xs text-muted">Ontem, 16:45</div>
+                  <div class="bg-[#1f2430] border border-custom rounded-2xl p-4 flex items-center gap-4 cursor-pointer hover:bg-white/4 transition relative overflow-hidden card-hover" onclick="selectActivity('rita')">
+                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-pink-400"></div>
+                    <div class="w-10 h-10 rounded-full overflow-hidden bg-gray-600 ml-2 shrink-0"><img src="https://i.pravatar.cc/150?img=5" alt="Rita Lopes" class="w-full h-full object-cover" /></div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm"><span class="font-semibold text-white">Rita Lopes</span> <span class="text-muted text-xs mx-1">|</span> Exportou dados</p>
+                      <p class="text-xs text-muted mt-1 truncate">Gerou relatório PDF do paciente.</p>
+                    </div>
+                    <div class="text-muted">›</div>
+                  </div>
+                </div>
+              </div>
+
+              <aside class="w-full xl:w-[26rem] panel-2 border border-custom rounded-2xl p-6 flex flex-col shrink-0">
+                <h3 class="font-semibold mb-6">Detalhes da atividade</h3>
+
+                <div class="space-y-3 text-sm border-b border-custom pb-6 mb-6">
+                  <p><span class="text-muted">Usuário:</span> <span id="act-user">Ana Martins</span></p>
+                  <p><span class="text-muted">Ação:</span> <span id="act-action">Editou anotação</span></p>
+                  <p><span class="text-muted">Horário:</span> <span id="act-time">Hoje, 14:32</span></p>
+                  <p><span class="text-muted">IP:</span> <span id="act-ip">192.168.1.12</span></p>
+                </div>
+
+                <div class="space-y-3">
+                  <div>
+                    <h4 class="font-semibold text-sm mb-3">Alteração realizada</h4>
+                    <div class="bg-[#161a24] border border-custom rounded-xl p-3 text-xs text-muted mb-3">
+                      <p class="font-semibold text-gray-300 mb-1">Sessão: 24/04/2024</p>
+                      <p id="act-before">Paciente: relatou preocupações com trabalho.</p>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 class="text-xs text-muted mb-2">Depois</h4>
+                    <div class="bg-[#161a24] border border-custom rounded-xl p-3 text-xs text-muted">
+                      <p id="act-after">Paciente: relatou preocupações com trabalho e insônia.</p>
+                    </div>
+                  </div>
+                  <div class="pt-4">
+                    <h4 class="text-xs text-muted mb-2">Observação de auditoria</h4>
+                    <p class="text-xs text-muted leading-relaxed">A tela exibe trilha de auditoria com autor, horário, IP, evento e diferença de conteúdo. Boa parte dos sistemas faz isso mal. Aqui pelo menos dá para visualizar quem fez o quê sem procurar em três menus inúteis.</p>
+                  </div>
+                </div>
+              </aside>
+            </div>
+          </div>
+
+          <div id="tab-visao-geral" class="tab-content h-full p-8 overflow-y-auto">
+            <h2 class="text-xl font-semibold mb-4">Visão Geral do Paciente</h2>
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+              <div class="panel border border-custom rounded-2xl p-6 xl:col-span-2">
+                <div class="flex items-center justify-between mb-4">
+                  <h3 class="font-semibold">Resumo clínico</h3>
+                  <span class="chip text-xs px-3 py-1 rounded-full">Atualizado hoje</span>
+                </div>
+                <p class="text-muted text-sm leading-relaxed">
+                  João está em acompanhamento por queixas de ansiedade, sobrecarga ocupacional e alterações do sono. Os registros indicam evolução gradual, com foco em rotina, reestruturação cognitiva e higiene do sono.
+                </p>
+                <div class="grid md:grid-cols-3 gap-4 mt-6">
+                  <div class="panel-2 border border-custom rounded-xl p-4"><p class="text-xs text-muted">Humor</p><p class="text-xl font-semibold mt-1">Estável</p></div>
+                  <div class="panel-2 border border-custom rounded-xl p-4"><p class="text-xs text-muted">Adesão</p><p class="text-xl font-semibold mt-1">Boa</p></div>
+                  <div class="panel-2 border border-custom rounded-xl p-4"><p class="text-xs text-muted">Risco</p><p class="text-xl font-semibold mt-1">Baixo</p></div>
+                </div>
+              </div>
+              <div class="panel border border-custom rounded-2xl p-6">
+                <h3 class="font-semibold mb-4">Informações rápidas</h3>
+                <div class="space-y-3 text-sm text-muted">
+                  <p><span class="text-white">Contato:</span> (13) 99999-1111</p>
+                  <p><span class="text-white">E-mail:</span> joao.silveira@email.com</p>
+                  <p><span class="text-white">Próxima sessão:</span> 30/04, 14:00</p>
+                  <p><span class="text-white">Convênio:</span> Particular</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="tab-anotacoes" class="tab-content h-full p-8 overflow-y-auto">
+            <h2 class="text-xl font-semibold mb-4">Anotações Clínicas</h2>
+            <div class="space-y-4 max-w-4xl">
+              <div class="panel border border-custom rounded-2xl p-5">
+                <div class="flex items-center justify-between">
+                  <h3 class="font-semibold">24/04/2024</h3>
+                  <span class="text-xs text-muted">Sessão 19</span>
+                </div>
+                <p class="text-sm text-muted mt-3">Paciente relatou preocupação com trabalho e dificuldade para desligar após o expediente. Foram discutidos gatilhos, rotina de sono e organização de tarefas.</p>
+              </div>
+              <div class="panel border border-custom rounded-2xl p-5">
+                <div class="flex items-center justify-between">
+                  <h3 class="font-semibold">17/04/2024</h3>
+                  <span class="text-xs text-muted">Sessão 18</span>
+                </div>
+                <p class="text-sm text-muted mt-3">Reforço de estratégias de enfrentamento, psicoeducação sobre ansiedade e registro de progresso no acompanhamento semanal.</p>
+              </div>
+            </div>
+          </div>
+
+          <div id="tab-evolucao" class="tab-content h-full p-8 overflow-y-auto">
+            <h2 class="text-xl font-semibold mb-4">Evolução</h2>
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+              <div class="panel border border-custom rounded-2xl p-6 xl:col-span-2">
+                <h3 class="font-semibold mb-5">Objetivos terapêuticos</h3>
+                <div class="space-y-4">
+                  <div>
+                    <div class="flex items-center justify-between text-sm mb-2"><span>Higiene do sono</span><span class="text-muted">78%</span></div>
+                    <div class="h-2 bg-black/25 rounded-full overflow-hidden"><div class="h-full w-[78%] bg-gradient-to-r from-emerald-400 to-cyan-400"></div></div>
+                  </div>
+                  <div>
+                    <div class="flex items-center justify-between text-sm mb-2"><span>Gestão de ansiedade</span><span class="text-muted">64%</span></div>
+                    <div class="h-2 bg-black/25 rounded-full overflow-hidden"><div class="h-full w-[64%] bg-gradient-to-r from-violet-400 to-fuchsia-400"></div></div>
+                  </div>
+                  <div>
+                    <div class="flex items-center justify-between text-sm mb-2"><span>Rotina e organização</span><span class="text-muted">82%</span></div>
+                    <div class="h-2 bg-black/25 rounded-full overflow-hidden"><div class="h-full w-[82%] bg-gradient-to-r from-blue-400 to-indigo-400"></div></div>
+                  </div>
+                </div>
+              </div>
+              <div class="panel border border-custom rounded-2xl p-6">
+                <h3 class="font-semibold mb-4">Indicadores</h3>
+                <div class="space-y-4 text-sm">
+                  <div class="flex justify-between"><span class="text-muted">Frequência</span><span class="text-white">Regular</span></div>
+                  <div class="flex justify-between"><span class="text-muted">Última crise</span><span class="text-white">Há 3 semanas</span></div>
+                  <div class="flex justify-between"><span class="text-muted">Farmacoterapia</span><span class="text-white">Não</span></div>
+                  <div class="flex justify-between"><span class="text-muted">Encaminhamentos</span><span class="text-white">Nenhum</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <footer class="panel border-t border-custom p-4 flex items-center justify-center gap-8 text-xs text-muted shrink-0">
+          <p>Sessões registradas: <span class="text-white font-semibold text-sm ml-1">46</span></p>
+          <div class="h-4 w-px bg-gray-700"></div>
+          <p>Arquivos anexados: <span class="text-white font-semibold text-sm ml-1">12</span></p>
+          <div class="h-4 w-px bg-gray-700"></div>
+          <p>Última sincronização: <span class="text-white font-semibold">há 5 minutos</span></p>
+        </footer>
+      </div>
+
+      <!-- Screen: Agenda -->
+      <div id="screen-agenda" class="screen-content h-full overflow-hidden">
+        <header class="panel border-b border-custom px-8 py-6 soft-shadow">
+          <div class="flex items-center justify-between flex-wrap gap-4">
+            <div>
+              <p class="text-xs uppercase tracking-[0.28em] text-blue-300/80">Agenda de consultas</p>
+              <h1 class="text-2xl font-semibold mt-1">Planejamento semanal</h1>
+              <p class="text-muted text-sm mt-2">Visão de horários, encaixes, status e prontidão para atendimento.</p>
+            </div>
+            <div class="flex gap-3 flex-wrap">
+              <button class="chip px-4 py-2 rounded-xl text-sm hover:bg-white/5 transition">Hoje</button>
+              <button class="chip px-4 py-2 rounded-xl text-sm hover:bg-white/5 transition">Semana</button>
+              <button class="px-4 py-2 rounded-xl text-sm bg-blue-600 hover:bg-blue-700 transition text-white">Agendar</button>
+            </div>
+          </div>
+        </header>
+
+        <section class="flex-1 overflow-y-auto p-8 grid gap-6">
+          <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+            <div class="panel border border-custom rounded-2xl p-5"><p class="text-xs text-muted">Atendimentos hoje</p><p class="text-3xl font-semibold mt-2">14</p></div>
+            <div class="panel border border-custom rounded-2xl p-5"><p class="text-xs text-muted">Confirmados</p><p class="text-3xl font-semibold mt-2">11</p></div>
+            <div class="panel border border-custom rounded-2xl p-5"><p class="text-xs text-muted">Pendentes</p><p class="text-3xl font-semibold mt-2">3</p></div>
+            <div class="panel border border-custom rounded-2xl p-5"><p class="text-xs text-muted">Cancelamentos</p><p class="text-3xl font-semibold mt-2">1</p></div>
+          </div>
+
+          <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div class="panel border border-custom rounded-2xl p-6 xl:col-span-2">
+              <div class="flex items-center justify-between mb-5">
+                <h3 class="font-semibold text-lg">Grade do dia</h3>
+                <span class="text-xs text-muted">Segunda-feira</span>
+              </div>
+              <div class="space-y-3">
+                <div class="flex items-center gap-4 p-4 rounded-xl border border-custom bg-white/3">
+                  <div class="w-20 text-sm text-muted">08:30</div>
+                  <div class="flex-1"><p class="font-medium">Triagem - Mariana Alves</p><p class="text-xs text-muted">Primeiro atendimento • Online</p></div>
+                  <span class="chip text-xs px-3 py-1 rounded-full">Confirmado</span>
+                </div>
+                <div class="flex items-center gap-4 p-4 rounded-xl border border-custom bg-white/3">
+                  <div class="w-20 text-sm text-muted">10:00</div>
+                  <div class="flex-1"><p class="font-medium">Retorno - João Silveira</p><p class="text-xs text-muted">Sessão 19 • Presencial</p></div>
+                  <span class="chip text-xs px-3 py-1 rounded-full">Em andamento</span>
+                </div>
+                <div class="flex items-center gap-4 p-4 rounded-xl border border-custom bg-white/3">
+                  <div class="w-20 text-sm text-muted">14:00</div>
+                  <div class="flex-1"><p class="font-medium">Avaliação - Lucas Santos</p><p class="text-xs text-muted">Anamnese • Presencial</p></div>
+                  <span class="chip text-xs px-3 py-1 rounded-full">Aguardando</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel border border-custom rounded-2xl p-6">
+              <h3 class="font-semibold text-lg mb-4">Próximos 3 dias</h3>
+              <div class="space-y-3 text-sm">
+                <div class="panel-2 border border-custom rounded-xl p-4"><p class="font-medium">Terça</p><p class="text-xs text-muted mt-1">8 sessões, 1 encaixe livre</p></div>
+                <div class="panel-2 border border-custom rounded-xl p-4"><p class="font-medium">Quarta</p><p class="text-xs text-muted mt-1">6 sessões, 2 remarcações</p></div>
+                <div class="panel-2 border border-custom rounded-xl p-4"><p class="font-medium">Quinta</p><p class="text-xs text-muted mt-1">9 sessões, agenda cheia</p></div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Screen: Relatórios -->
+      <div id="screen-relatorios" class="screen-content h-full overflow-hidden">
+        <header class="panel border-b border-custom px-8 py-6 soft-shadow">
+          <div class="flex items-center justify-between flex-wrap gap-4">
+            <div>
+              <p class="text-xs uppercase tracking-[0.28em] text-emerald-300/80">Relatórios e exportação</p>
+              <h1 class="text-2xl font-semibold mt-1">Análises operacionais e clínicas</h1>
+              <p class="text-muted text-sm mt-2">Indicadores para evolução, produtividade, comparecimento e produção documental.</p>
+            </div>
+            <div class="flex gap-3 flex-wrap">
+              <button class="chip px-4 py-2 rounded-xl text-sm hover:bg-white/5 transition">PDF</button>
+              <button class="chip px-4 py-2 rounded-xl text-sm hover:bg-white/5 transition">CSV</button>
+              <button class="px-4 py-2 rounded-xl text-sm bg-emerald-600 hover:bg-emerald-700 transition text-white">Exportar</button>
+            </div>
+          </div>
+        </header>
+
+        <section class="flex-1 overflow-y-auto p-8 grid gap-6">
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="panel border border-custom rounded-2xl p-6 lg:col-span-2">
+              <div class="flex items-center justify-between mb-5">
+                <h3 class="font-semibold text-lg">Produção semanal</h3>
+                <span class="text-xs text-muted">Últimos 7 dias</span>
+              </div>
+              <div class="grid gap-3">
+                <div class="flex items-center gap-3"><span class="w-16 text-xs text-muted">Seg</span><div class="flex-1 h-3 bg-black/25 rounded-full overflow-hidden"><div class="h-full w-[72%] bg-gradient-to-r from-blue-400 to-violet-400"></div></div><span class="w-10 text-right text-xs text-muted">72%</span></div>
+                <div class="flex items-center gap-3"><span class="w-16 text-xs text-muted">Ter</span><div class="flex-1 h-3 bg-black/25 rounded-full overflow-hidden"><div class="h-full w-[58%] bg-gradient-to-r from-blue-400 to-violet-400"></div></div><span class="w-10 text-right text-xs text-muted">58%</span></div>
+                <div class="flex items-center gap-3"><span class="w-16 text-xs text-muted">Qua</span><div class="flex-1 h-3 bg-black/25 rounded-full overflow-hidden"><div class="h-full w-[84%] bg-gradient-to-r from-blue-400 to-violet-400"></div></div><span class="w-10 text-right text-xs text-muted">84%</span></div>
+                <div class="flex items-center gap-3"><span class="w-16 text-xs text-muted">Qui</span><div class="flex-1 h-3 bg-black/25 rounded-full overflow-hidden"><div class="h-full w-[68%] bg-gradient-to-r from-blue-400 to-violet-400"></div></div><span class="w-10 text-right text-xs text-muted">68%</span></div>
+                <div class="flex items-center gap-3"><span class="w-16 text-xs text-muted">Sex</span><div class="flex-1 h-3 bg-black/25 rounded-full overflow-hidden"><div class="h-full w-[91%] bg-gradient-to-r from-blue-400 to-violet-400"></div></div><span class="w-10 text-right text-xs text-muted">91%</span></div>
+              </div>
+            </div>
+
+            <div class="panel border border-custom rounded-2xl p-6">
+              <h3 class="font-semibold text-lg mb-4">Resumo</h3>
+              <div class="space-y-4 text-sm">
+                <div class="flex justify-between"><span class="text-muted">Sessões fechadas</span><span class="text-white">128</span></div>
+                <div class="flex justify-between"><span class="text-muted">Presentes</span><span class="text-white">112</span></div>
+                <div class="flex justify-between"><span class="text-muted">Faltas</span><span class="text-white">9</span></div>
+                <div class="flex justify-between"><span class="text-muted">Remarcações</span><span class="text-white">7</span></div>
+                <div class="flex justify-between"><span class="text-muted">Taxa de comparecimento</span><span class="text-emerald-300">87,5%</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel border border-custom rounded-2xl p-6">
+            <h3 class="font-semibold text-lg mb-4">Relatórios disponíveis</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+              <div class="panel-2 border border-custom rounded-xl p-4"><p class="font-medium">Prontuários exportados</p><p class="text-xs text-muted mt-1">PDF com resumo clínico e anexos</p></div>
+              <div class="panel-2 border border-custom rounded-xl p-4"><p class="font-medium">Auditoria completa</p><p class="text-xs text-muted mt-1">Usuário, ação, IP e timestamp</p></div>
+              <div class="panel-2 border border-custom rounded-xl p-4"><p class="font-medium">Financeiro simplificado</p><p class="text-xs text-muted mt-1">Sessões, pacotes e pendências</p></div>
+              <div class="panel-2 border border-custom rounded-xl p-4"><p class="font-medium">Evolução terapêutica</p><p class="text-xs text-muted mt-1">Objetivos, indicadores e progresso</p></div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Screen: Configurações -->
+      <div id="screen-configuracoes" class="screen-content h-full overflow-hidden">
+        <header class="panel border-b border-custom px-8 py-6 soft-shadow">
+          <div class="flex items-center justify-between flex-wrap gap-4">
+            <div>
+              <p class="text-xs uppercase tracking-[0.28em] text-pink-300/80">Configurações do sistema</p>
+              <h1 class="text-2xl font-semibold mt-1">Preferências, segurança e integração</h1>
+              <p class="text-muted text-sm mt-2">Ajustes de acesso, notificações, aparência e armazenamento.</p>
+            </div>
+            <button class="px-4 py-2 rounded-xl text-sm bg-pink-600 hover:bg-pink-700 transition text-white">Salvar alterações</button>
+          </div>
+        </header>
+
+        <section class="flex-1 overflow-y-auto p-8 grid gap-6">
+          <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <div class="panel border border-custom rounded-2xl p-6">
+              <h3 class="font-semibold text-lg mb-4">Preferências visuais</h3>
+              <div class="space-y-4 text-sm">
+                <div class="flex items-center justify-between"><span class="text-muted">Tema</span><span class="chip px-3 py-1 rounded-full">Escuro</span></div>
+                <div class="flex items-center justify-between"><span class="text-muted">Densidade</span><span class="chip px-3 py-1 rounded-full">Compacta</span></div>
+                <div class="flex items-center justify-between"><span class="text-muted">Idioma</span><span class="chip px-3 py-1 rounded-full">Português (BR)</span></div>
+              </div>
+            </div>
+
+            <div class="panel border border-custom rounded-2xl p-6">
+              <h3 class="font-semibold text-lg mb-4">Segurança</h3>
+              <div class="space-y-4 text-sm">
+                <div class="flex items-center justify-between"><span class="text-muted">Autenticação em dois fatores</span><span class="text-emerald-300">Ativa</span></div>
+                <div class="flex items-center justify-between"><span class="text-muted">Tempo de sessão</span><span class="text-white">30 minutos</span></div>
+                <div class="flex items-center justify-between"><span class="text-muted">Logs de auditoria</span><span class="text-emerald-300">Ativos</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel border border-custom rounded-2xl p-6">
+            <h3 class="font-semibold text-lg mb-4">Integrações</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="panel-2 border border-custom rounded-xl p-4"><p class="font-medium">Backup em nuvem</p><p class="text-xs text-muted mt-1">Sincronização automática habilitada</p></div>
+              <div class="panel-2 border border-custom rounded-xl p-4"><p class="font-medium">E-mail transacional</p><p class="text-xs text-muted mt-1">Confirmações e alertas configurados</p></div>
+              <div class="panel-2 border border-custom rounded-xl p-4"><p class="font-medium">Exportação segura</p><p class="text-xs text-muted mt-1">Criptografia de arquivos ativada</p></div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const activityMap = {
+      ana: {
+        user: 'Ana Martins',
+        action: 'Editou anotação',
+        time: 'Hoje, 14:32',
+        ip: '192.168.1.12',
+        before: 'Paciente: relatou preocupações com trabalho.',
+        after: 'Paciente: relatou preocupações com trabalho e insônia.'
+      },
+      carlos: {
+        user: 'Carlos Souza',
+        action: 'Acessou prontuário',
+        time: 'Hoje, 10:15',
+        ip: '192.168.1.20',
+        before: 'Consulta em aberto para revisão de histórico.',
+        after: 'Consulta revisada. Histórico visualizado sem alterações no conteúdo.'
+      },
+      rita: {
+        user: 'Rita Lopes',
+        action: 'Exportou dados',
+        time: 'Ontem, 16:45',
+        ip: '192.168.1.34',
+        before: 'Relatório parcial gerado para conferência.',
+        after: 'Relatório PDF completo exportado com anexos e auditoria.'
+      }
+    };
+
+    function changeScreen(screenId) {
+      document.querySelectorAll('.screen-content').forEach(el => el.classList.remove('active'));
+      document.getElementById('screen-' + screenId).classList.add('active');
+
+      document.querySelectorAll('.menu-btn').forEach(btn => {
+        btn.classList.remove('active-menu');
+        btn.classList.add('text-muted');
+        if (btn.dataset.target === screenId) {
+          btn.classList.add('active-menu');
+          btn.classList.remove('text-muted');
+        }
+      });
+
+      const status = document.getElementById('sync-status');
+      if (status) status.textContent = 'agora';
+    }
+
+    function changeTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.getElementById('tab-' + tabId).classList.add('active');
+
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active-tab');
+        btn.classList.add('text-muted');
+        if (btn.dataset.target === tabId) {
+          btn.classList.add('active-tab');
+          btn.classList.remove('text-muted');
+        }
+      });
+    }
+
+    function selectActivity(key) {
+      const a = activityMap[key];
+      if (!a) return;
+      document.getElementById('act-user').textContent = a.user;
+      document.getElementById('act-action').textContent = a.action;
+      document.getElementById('act-time').textContent = a.time;
+      document.getElementById('act-ip').textContent = a.ip;
+      document.getElementById('act-before').textContent = a.before;
+      document.getElementById('act-after').textContent = a.after;
+    }
+
+    // Pequena UX: ativa a primeira tela e primeira aba corretamente ao carregar.
+    window.addEventListener('DOMContentLoaded', () => {
+      changeScreen('pacientes');
+      changeTab('auditoria');
+    });
+  </script>
+</body>
+</html>
